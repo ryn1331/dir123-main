@@ -1,0 +1,33 @@
+name: Keep Supabase Alive
+
+# Ping the Supabase REST API every 4 days so the Lovable Cloud / Supabase
+# project never gets paused for inactivity. Free-tier projects pause after
+# 7 days without traffic — a request every 4 days keeps it healthy forever.
+
+on:
+  schedule:
+    # At 09:00 UTC every 4 days
+    - cron: "0 9 */4 * *"
+  workflow_dispatch: # also allow manual runs from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: https://wavcptafcrwwejfahfaw.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdmNwdGFmY3J3d2VqZmFoZmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4Njk0OTUsImV4cCI6MjA5NDQ0NTQ5NX0.RZeh2BhohRF8Lp1ptGcAnecP06i9lRNuTPt9lb2FjIA
+        run: |
+          echo "Pinging Supabase to keep the project active..."
+          RESPONSE=$(curl -s -o /tmp/body -w "%{http_code}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/products?select=id&limit=1")
+          echo "HTTP status: $RESPONSE"
+          cat /tmp/body
+          if [ "$RESPONSE" -lt 200 ] || [ "$RESPONSE" -ge 400 ]; then
+            echo "::error::Supabase ping failed with status $RESPONSE"
+            exit 1
+          fi
+          echo "✅ Supabase is alive"

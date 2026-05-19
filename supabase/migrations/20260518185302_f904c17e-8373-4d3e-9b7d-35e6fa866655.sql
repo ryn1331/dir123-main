@@ -1,0 +1,1 @@
+ALTER TABLE public.delivery_communes ADD COLUMN IF NOT EXISTS zr_district_id uuid;

@@ -1,0 +1,11 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.products TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.packs TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.pack_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.orders TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.order_items TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.clients TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.site_settings TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_zones TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.delivery_communes TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.promos TO authenticated;
+GRANT SELECT ON public.products_public TO authenticated, anon;
