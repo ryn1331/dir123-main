@@ -313,7 +313,7 @@ export default function AdminProducts() {
 
       {/* In-store stock deduction modal */}
       {showStockModal && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setShowStockModal(null)}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-card border border-border rounded-xl p-5 max-w-sm w-full" onClick={e => e.stopPropagation()}>
             <h3 className="font-heading font-bold text-base mb-1">
               {stockMode === "add" ? "📦 Réapprovisionner" : "🏪 Vente en présentiel"}
@@ -343,7 +343,7 @@ export default function AdminProducts() {
 
       {/* Product Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-2 pt-8 md:items-center md:p-4" onClick={() => setShowForm(false)}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center p-2 pt-8 md:items-center md:p-4">
           <div className="bg-card border border-border rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             {/* Form header */}
             <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3 flex items-center justify-between rounded-t-xl">
