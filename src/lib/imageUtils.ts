@@ -118,16 +118,16 @@ export async function compressThumbnail(file: File): Promise<Blob> {
 }
 
 /**
- * Standard product photo preset — 3:4 portrait letterboxed on warm off-white.
- * Guarantees every storefront thumbnail has the same shape, no cropping.
+ * Standard product photo preset — square 1:1 letterboxed on warm off-white.
+ * Matches the client-facing product and pack cards.
  */
 export async function compressProductPhoto(file: File): Promise<Blob> {
   const { blob } = await compressImage(file, {
     maxWidth: 1200,
-    maxHeight: 1600,
+    maxHeight: 1200,
     quality: 0.85,
     format: "webp",
-    targetAspect: 3 / 4,
+    targetAspect: 1,
     background: "#faf8f4",
   });
   return blob;

@@ -128,6 +128,7 @@ export default function AdminPacks() {
                   </button>
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
                 </div>
+                <p className="text-[10px] text-muted-foreground">Auto-cadrée en carré 1:1. Idéal: 1200 × 1200 px.</p>
               </div>
               <div><label className="text-xs text-muted-foreground mb-1 block">Nom *</label><input value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} className="w-full h-10 rounded-md bg-secondary border border-border px-3 text-sm" maxLength={100} /></div>
               <div><label className="text-xs text-muted-foreground mb-1 block">Description</label><input value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} className="w-full h-10 rounded-md bg-secondary border border-border px-3 text-sm" maxLength={200} /></div>

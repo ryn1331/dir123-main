@@ -2,15 +2,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import Header from "@/components/layout/Header";
 import MessengerButton from "@/components/layout/MessengerButton";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
+import { initMetaPixel, trackPageView } from "@/lib/metaPixel";
 
 
 // Lazy-loaded pages
@@ -49,6 +50,26 @@ function PageLoader() {
   );
 }
 
+function MetaPixelTracker() {
+  const location = useLocation();
+  const lastPathRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    initMetaPixel();
+    trackPageView();
+    lastPathRef.current = `${location.pathname}${location.search}`;
+  }, []);
+
+  useEffect(() => {
+    const current = `${location.pathname}${location.search}`;
+    if (lastPathRef.current === current) return;
+    trackPageView();
+    lastPathRef.current = current;
+  }, [location.pathname, location.search]);
+
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -59,6 +80,7 @@ const App = () => (
           <CartProvider>
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
+                <MetaPixelTracker />
                 <Routes>
                   {/* Landing pages for Facebook/Instagram ads */}
                   <Route path="/l/:slug" element={<LandingPage />} />

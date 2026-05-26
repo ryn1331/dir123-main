@@ -381,7 +381,7 @@ export default function AdminProducts() {
                       {uploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
                       {uploading ? "Upload..." : "📸 Image principale"}
                     </button>
-                    <p className="text-[10px] text-muted-foreground mt-1">Auto-converti en WebP &lt; 300 Ko</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">Auto-cadrée en carré 1:1, WebP &lt; 300 Ko. Idéal: 1200 × 1200 px.</p>
                   </div>
                   <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
                 </div>
@@ -403,7 +403,7 @@ export default function AdminProducts() {
                       <input type="file" accept="image/*" multiple onChange={handleGalleryUpload} className="hidden" />
                     </label>
                   </div>
-                  <p className="text-[9px] text-muted-foreground">Ajoutez des photos (dos, ingrédients, etc.)</p>
+                  <p className="text-[9px] text-muted-foreground">Photos carrées recommandées. Idéal: 1200 × 1200 px.</p>
                 </div>
               </div>
 

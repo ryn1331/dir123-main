@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Search, X, Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, getStorageUrl } from "@/types/database";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,12 +16,14 @@ interface SearchResult {
 
 export default function GlobalSearch() {
   const { t } = useLang();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastLocationKeyRef = useRef(location.key);
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setResults([]); return; }
@@ -46,7 +48,22 @@ export default function GlobalSearch() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  const close = () => { setOpen(false); setQuery(""); setResults([]); };
+  const close = useCallback(() => {
+    setOpen(false);
+    setQuery("");
+    setResults([]);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      lastLocationKeyRef.current = location.key;
+      return;
+    }
+    if (lastLocationKeyRef.current !== location.key) {
+      lastLocationKeyRef.current = location.key;
+      close();
+    }
+  }, [location.key, open, close]);
 
   return (
     <>
@@ -81,12 +98,31 @@ export default function GlobalSearch() {
                   ref={inputRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      close();
+                    }
+                  }}
                   placeholder={t("common.searchProduct")}
                   className="flex-1 bg-transparent text-sm font-body text-foreground outline-none placeholder:text-muted-foreground"
                   maxLength={100}
                 />
                 {loading && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
-                <button onClick={close} className="p-1 text-muted-foreground hover:text-foreground">
+                <button
+                  type="button"
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    close();
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    close();
+                  }}
+                  className="p-1 text-muted-foreground hover:text-foreground"
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -97,6 +133,7 @@ export default function GlobalSearch() {
                     <Link
                       key={p.id}
                       to={`/produit/${p.id}`}
+                      onPointerDown={close}
                       onClick={close}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary/60 transition-colors"
                     >
@@ -125,6 +162,7 @@ export default function GlobalSearch() {
                 <div className="border-t border-border px-4 py-2.5">
                   <Link
                     to={`/catalogue?q=${encodeURIComponent(query)}`}
+                    onPointerDown={close}
                     onClick={close}
                     className="text-xs text-primary hover:underline font-medium"
                   >
