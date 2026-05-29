@@ -95,6 +95,28 @@ export default function AdminProducts() {
   const [stockDeduct, setStockDeduct] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const BRANDS_STORAGE_KEY = "admin_brands";
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(BRANDS_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { extra?: string[]; hidden?: string[] };
+      if (Array.isArray(parsed.extra)) setExtraBrands(parsed.extra.filter(Boolean));
+      if (Array.isArray(parsed.hidden)) setHiddenBrands(parsed.hidden.filter(Boolean));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(BRANDS_STORAGE_KEY, JSON.stringify({ extra: extraBrands, hidden: hiddenBrands }));
+    } catch {
+      /* ignore */
+    }
+  }, [extraBrands, hiddenBrands]);
+
   const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.brand.toLowerCase().includes(search.toLowerCase());
     const matchCategory = categoryFilter === "all" || p.category === categoryFilter;
