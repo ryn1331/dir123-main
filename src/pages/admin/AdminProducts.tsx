@@ -86,6 +86,9 @@ export default function AdminProducts() {
   const [flavorsInput, setFlavorsInput] = useState("");
   const [weightsInput, setWeightsInput] = useState("");
   const [objectivesInput, setObjectivesInput] = useState("");
+  const [newBrand, setNewBrand] = useState("");
+  const [extraBrands, setExtraBrands] = useState<string[]>([]);
+  const [hiddenBrands, setHiddenBrands] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [showStockModal, setShowStockModal] = useState<DbProduct | null>(null);
   const [stockMode, setStockMode] = useState<"add" | "deduct">("deduct");
@@ -103,10 +106,70 @@ export default function AdminProducts() {
     return acc;
   }, {} as Record<string, number>);
 
+  const normalizeBrand = (value: string) =>
+    value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+  const allBrands = useMemo(() => {
+    const fromProducts = products.map((p) => p.brand).filter(Boolean);
+    const all = [...fromProducts, ...extraBrands, form.brand].filter(Boolean);
+    const map = new Map<string, string>();
+    all.forEach((b) => {
+      const key = normalizeBrand(b);
+      if (!key) return;
+      if (!map.has(key)) map.set(key, b.trim());
+    });
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }, [products, extraBrands, form.brand]);
+
+  const brandOptions = useMemo(() => {
+    const hiddenKeys = new Set(hiddenBrands.map(normalizeBrand));
+    return allBrands.filter((b) => {
+      const key = normalizeBrand(b);
+      if (!key) return false;
+      if (form.brand && normalizeBrand(form.brand) === key) return true;
+      return !hiddenKeys.has(key);
+    });
+  }, [allBrands, hiddenBrands, form.brand]);
+
+  const addNewBrand = () => {
+    const next = newBrand.trim();
+    if (!next) return;
+    const nextKey = normalizeBrand(next);
+    const existing = allBrands.find((b) => normalizeBrand(b) === nextKey);
+    if (existing) {
+      setHiddenBrands((prev) => prev.filter((b) => normalizeBrand(b) !== nextKey));
+      setForm((f) => ({ ...f, brand: existing }));
+      setNewBrand("");
+      return;
+    }
+    setExtraBrands((prev) => [...prev, next]);
+    setForm((f) => ({ ...f, brand: next }));
+    setNewBrand("");
+  };
+
+  const removeExtraBrand = (brand: string) => {
+    const key = normalizeBrand(brand);
+    const productBrandKeys = new Set(products.map((p) => normalizeBrand(p.brand || "")));
+    setExtraBrands((prev) => prev.filter((b) => normalizeBrand(b) !== key));
+    if (!productBrandKeys.has(key) && normalizeBrand(form.brand) === key) {
+      setForm((f) => ({ ...f, brand: "" }));
+    }
+  };
+
+  const hideBrand = (brand: string) => {
+    const key = normalizeBrand(brand);
+    if (!key) return;
+    setHiddenBrands((prev) => (prev.includes(key) ? prev : [...prev, key]));
+    if (normalizeBrand(form.brand) === key) {
+      setForm((f) => ({ ...f, brand: "" }));
+    }
+  };
+
   const openAdd = () => {
     setEditing(null);
     setForm(defaultProduct);
     setFlavorsInput(""); setWeightsInput(""); setObjectivesInput("");
+    setNewBrand("");
     setShowForm(true);
   };
 
@@ -129,6 +192,7 @@ export default function AdminProducts() {
     setFlavorsInput((p.flavors || []).join(", "));
     setWeightsInput((p.weights || []).join(", "));
     setObjectivesInput((p.objectives || []).join(", "));
+    setNewBrand("");
     setShowForm(true);
   };
 
@@ -410,7 +474,88 @@ export default function AdminProducts() {
               {/* Basic info */}
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Nom *" value={form.name} onChange={v => setForm(f => ({ ...f, name: v }))} maxLength={100} />
-                <FormField label="Marque *" value={form.brand} onChange={v => setForm(f => ({ ...f, brand: v }))} maxLength={100} />
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Marque *</label>
+                  <div className="flex gap-2">
+                    <select
+                      value={form.brand}
+                      onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))}
+                      className="flex-1 h-9 rounded-lg bg-secondary border border-border px-3 text-sm"
+                    >
+                      <option value="">Choisir une marque</option>
+                      {brandOptions.map((b) => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={addNewBrand}
+                      className="h-9 w-9 rounded-lg bg-secondary border border-border flex items-center justify-center text-muted-foreground hover:text-foreground"
+                      aria-label="Ajouter la marque"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      value={newBrand}
+                      onChange={(e) => setNewBrand(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addNewBrand();
+                        }
+                      }}
+                      placeholder="Ajouter une nouvelle marque"
+                      className="flex-1 h-9 rounded-lg bg-secondary border border-border px-3 text-sm"
+                      maxLength={100}
+                    />
+                    <button
+                      type="button"
+                      onClick={addNewBrand}
+                      className="h-9 px-3 rounded-lg bg-secondary border border-border text-xs"
+                    >
+                      Ajouter
+                    </button>
+                  </div>
+                  {extraBrands.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {extraBrands.map((b) => (
+                        <span key={b} className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px]">
+                          {b}
+                          <button
+                            type="button"
+                            onClick={() => removeExtraBrand(b)}
+                            className="text-muted-foreground hover:text-foreground"
+                            aria-label={`Supprimer ${b}`}
+                          >
+                            <X size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {brandOptions.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-[10px] text-muted-foreground">Marques disponibles (supprimer du dropdown)</p>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        {brandOptions.map((b) => (
+                          <span key={b} className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-[10px]">
+                            {b}
+                            <button
+                              type="button"
+                              onClick={() => hideBrand(b)}
+                              className="text-muted-foreground hover:text-foreground"
+                              aria-label={`Masquer ${b}`}
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
