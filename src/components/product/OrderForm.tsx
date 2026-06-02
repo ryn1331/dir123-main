@@ -234,7 +234,7 @@ export default function OrderForm({ product, quantity, onClose }: OrderFormProps
               {/* Product summary */}
               <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-md bg-secondary overflow-hidden shrink-0">
-                  <img src={getStorageUrl(product.image_url, 80)} alt="" className="w-full h-full object-cover" width={40} height={40} />
+                  <img src={getStorageUrl(product.image_url, 80)} alt={product.name} className="w-full h-full object-cover" width={40} height={40} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-xs truncate">{product.name}</p>

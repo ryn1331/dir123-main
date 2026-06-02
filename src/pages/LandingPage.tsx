@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, getStorageUrl, type DbProduct } from "@/types/database";
 import { useLang } from "@/context/LanguageContext";
@@ -10,8 +10,11 @@ import { Button } from "@/components/ui/button";
 import OrderForm from "@/components/product/OrderForm";
 import { AnimatePresence } from "framer-motion";
 import { trackViewContent } from "@/lib/metaPixel";
-import { useEffect } from "react";
 import { MESSENGER_URL } from "@/lib/messenger";
+import { Helmet } from "react-helmet-async";
+
+const normalizeText = (value?: string) => (value || "").replace(/\s+/g, " ").trim();
+const truncateText = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 3).trimEnd()}...` : value);
 
 export default function LandingPage() {
   const { slug } = useParams();
@@ -53,9 +56,51 @@ export default function LandingPage() {
   }
 
   const scrollToOrder = () => setShowOrderForm(true);
+  const baseUrl = "https://dirlaffaire14.com";
+  const productName = normalizeText(product.name);
+  const productBrand = normalizeText(product.brand);
+  const baseTitle = `${productName} — Dir l'Affaire`;
+  const title = truncateText(baseTitle, 70);
+  const baseDescription = normalizeText(product.description) || `${productName}${productBrand ? ` par ${productBrand}` : ""}. Livraison partout en Algérie.`;
+  const description = truncateText(baseDescription, 160);
+  const canonical = `${baseUrl}/l/${slug || product.id}`;
+  const ogImage = getStorageUrl(product.image_url, 1200);
+  const inStock = product.in_stock && (product.stock_qty == null || product.stock_qty > 0);
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: productName,
+    description: baseDescription,
+    image: ogImage,
+    brand: {
+      "@type": "Brand",
+      name: productBrand || "Dir l'Affaire",
+    },
+    sku: String(product.id),
+    offers: {
+      "@type": "Offer",
+      url: canonical,
+      priceCurrency: "DZD",
+      price: product.price,
+      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="product:price:amount" content={String(product.price)} />
+        <meta property="product:price:currency" content="DZD" />
+        <script type="application/ld+json">{JSON.stringify(productJsonLd)}</script>
+      </Helmet>
       {/* Minimal header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between h-14">
@@ -66,81 +111,83 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="container py-8 md:py-16">
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-          <div className="aspect-square rounded-2xl overflow-hidden bg-secondary/50 border border-border max-w-md mx-auto md:mx-0">
-            <img src={getStorageUrl(product.image_url, 600)} alt={product.name} className="w-full h-full object-cover" loading="eager" {...({ fetchpriority: "high" } as any)} width={600} height={600} />
-          </div>
-
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">{product.brand}</p>
-            <h1 className="font-heading text-2xl md:text-4xl font-bold text-foreground mb-4">{product.name}</h1>
-
-
-            <div className="flex items-baseline gap-3 mb-6">
-              <span className="font-heading font-bold text-3xl md:text-4xl text-accent">{formatPrice(product.price)}</span>
-              {product.old_price && <span className="text-lg text-muted-foreground line-through">{formatPrice(product.old_price)}</span>}
+      <main>
+        {/* Hero */}
+        <section className="container py-8 md:py-16">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="aspect-square rounded-2xl overflow-hidden bg-secondary/50 border border-border max-w-md mx-auto md:mx-0">
+              <img src={getStorageUrl(product.image_url, 600)} alt={product.name} className="w-full h-full object-cover" loading="eager" {...({ fetchpriority: "high" } as any)} width={600} height={600} />
             </div>
 
-            <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">{product.brand}</p>
+              <h1 className="font-heading text-2xl md:text-4xl font-bold text-foreground mb-4">{product.name}</h1>
 
-            {/* Benefits */}
-            <div className="space-y-2 mb-8">
-              {(product.objectives || []).slice(0, 4).map(obj => (
-                <div key={obj} className="flex items-center gap-2 text-sm">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-primary text-xs">✓</span>
-                  </div>
-                  <span className="text-foreground">{obj}</span>
-                </div>
-              ))}
-            </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button onClick={scrollToOrder} size="lg" className="h-12 px-8 font-heading text-base bg-primary text-primary-foreground hover:bg-primary/90 rounded-full shadow-lg shadow-primary/20 flex-1">
-                {t("landing.orderNow")}
-              </Button>
-              <Button asChild variant="outline" size="lg" className="h-12 px-8 font-heading text-base rounded-full border-[#1877F2] text-[#1877F2] hover:bg-[#1877F2]/5">
-                <a href={MESSENGER_URL} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle size={18} className="me-2" />
-                  {t("landing.messenger")}
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust */}
-      <section className="bg-secondary/50 py-8">
-        <div className="container flex flex-wrap justify-center gap-8">
-          {[
-            { icon: Truck, text: t("landing.deliveryAll") },
-            { icon: ShieldCheck, text: t("landing.authentic") },
-            { icon: Phone, text: t("landing.freeAdvice") },
-          ].map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <div key={i} className="flex items-center gap-2 text-sm text-foreground">
-                <Icon size={18} className="text-primary" />
-                <span className="font-medium">{item.text}</span>
+              <div className="flex items-baseline gap-3 mb-6">
+                <span className="font-heading font-bold text-3xl md:text-4xl text-accent">{formatPrice(product.price)}</span>
+                {product.old_price && <span className="text-lg text-muted-foreground line-through">{formatPrice(product.old_price)}</span>}
               </div>
-            );
-          })}
-        </div>
-      </section>
 
-      {/* Bottom CTA */}
-      <section className="bg-primary py-10">
-        <div className="container text-center">
-          <h2 className="font-heading text-xl md:text-2xl font-bold text-primary-foreground mb-4">Commandez maintenant</h2>
-          <p className="text-primary-foreground/70 mb-6 text-sm">Livraison rapide · Paiement à la livraison · Conseil gratuit</p>
-          <Button onClick={scrollToOrder} size="lg" className="h-12 px-10 font-heading text-base bg-accent text-accent-foreground hover:bg-accent/90 rounded-full">
-            {t("landing.orderNow")}
-          </Button>
-        </div>
-      </section>
+              <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
+
+              {/* Benefits */}
+              <div className="space-y-2 mb-8">
+                {(product.objectives || []).slice(0, 4).map(obj => (
+                  <div key={obj} className="flex items-center gap-2 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-primary text-xs">✓</span>
+                    </div>
+                    <span className="text-foreground">{obj}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button onClick={scrollToOrder} size="lg" className="h-12 px-8 font-heading text-base bg-primary text-primary-foreground hover:bg-primary/90 rounded-full shadow-lg shadow-primary/20 flex-1">
+                  {t("landing.orderNow")}
+                </Button>
+                <Button asChild variant="outline" size="lg" className="h-12 px-8 font-heading text-base rounded-full border-[#1877F2] text-[#1877F2] hover:bg-[#1877F2]/5">
+                  <a href={MESSENGER_URL} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle size={18} className="me-2" />
+                    {t("landing.messenger")}
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Trust */}
+        <section className="bg-secondary/50 py-8">
+          <div className="container flex flex-wrap justify-center gap-8">
+            {[
+              { icon: Truck, text: t("landing.deliveryAll") },
+              { icon: ShieldCheck, text: t("landing.authentic") },
+              { icon: Phone, text: t("landing.freeAdvice") },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div key={i} className="flex items-center gap-2 text-sm text-foreground">
+                  <Icon size={18} className="text-primary" />
+                  <span className="font-medium">{item.text}</span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Bottom CTA */}
+        <section className="bg-primary py-10">
+          <div className="container text-center">
+            <h2 className="font-heading text-xl md:text-2xl font-bold text-primary-foreground mb-4">Commandez maintenant</h2>
+            <p className="text-primary-foreground/70 mb-6 text-sm">Livraison rapide · Paiement à la livraison · Conseil gratuit</p>
+            <Button onClick={scrollToOrder} size="lg" className="h-12 px-10 font-heading text-base bg-accent text-accent-foreground hover:bg-accent/90 rounded-full">
+              {t("landing.orderNow")}
+            </Button>
+          </div>
+        </section>
+      </main>
 
       {/* Footer */}
       <footer className="py-6 text-center text-xs text-muted-foreground bg-background border-t border-border">

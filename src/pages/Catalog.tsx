@@ -7,6 +7,7 @@ import ProductCardSkeleton from "@/components/product/ProductCardSkeleton";
 import { Loader2, Search, ArrowLeft } from "lucide-react";
 import type { DbProduct } from "@/types/database";
 import { Button } from "@/components/ui/button";
+import { Helmet } from "react-helmet-async";
 
 const PAGE_SIZE = 20;
 
@@ -52,8 +53,27 @@ const Catalog = React.forwardRef<HTMLDivElement>(function Catalog(_, ref) {
   const [sort, setSort] = useState<SortOption>("newest");
   const { t, lang } = useLang();
 
-  const universe = searchParams.get("univers") || "beaute";
+  const universeParam = searchParams.get("univers");
+  const universe = universeParam || "beaute";
   const activeCategory = searchParams.get("cat") || "all";
+
+  const baseUrl = "https://dirlaffaire14.com";
+  const seoUniverse = universeParam === "beaute" || universeParam === "sante" ? universeParam : "all";
+  const seoTitle = seoUniverse === "beaute"
+    ? "Beauté & Cosmétiques bio — Dir l'Affaire"
+    : seoUniverse === "sante"
+      ? "Santé & Compléments alimentaires — Dir l'Affaire"
+      : "Catalogue — Dir l'Affaire";
+  const seoDescription = seoUniverse === "beaute"
+    ? "Cosmétiques bio, soins visage et corps, anti-âge, collagène. Livraison partout en Algérie."
+    : seoUniverse === "sante"
+      ? "Compléments alimentaires, vitamines, minéraux, immunité, énergie. Livraison partout en Algérie."
+      : "Catalogue complet de cosmétiques bio et compléments alimentaires. Livraison partout en Algérie.";
+  const canonicalUrl = seoUniverse === "beaute"
+    ? `${baseUrl}/catalogue?univers=beaute`
+    : seoUniverse === "sante"
+      ? `${baseUrl}/catalogue?univers=sante`
+      : `${baseUrl}/catalogue`;
 
   const categoryList = useMemo(() => {
     if (universe === "beaute") return beauteCategories;
@@ -145,6 +165,15 @@ const Catalog = React.forwardRef<HTMLDivElement>(function Catalog(_, ref) {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+      </Helmet>
       <div className="container py-8 md:py-12">
          <div className="mb-8">
           {universe && (

@@ -1,0 +1,11 @@
+Dir l'Affaire
+Boutique premium algérienne de cosmétiques bio et compléments alimentaires. Livraison partout en Algérie, paiement à la livraison.
+
+Dir l'Affaire propose une sélection de produits de beauté et de bien-être : soins visage, soins corps, cheveux, anti-âge, collagène, ainsi que des compléments pour l'immunité, le stress, l'énergie, les muscles, les os, le cœur et la digestion. Tous les produits sont authentiques et expédiés depuis l'Algérie.
+
+Pages
+Accueil: Présentation de la boutique, sélections du moment.
+Catalogue Beauté: Cosmétiques, soins visage et corps, anti-âge, collagène.
+Catalogue Santé: Compléments alimentaires, vitamines, minéraux, immunité, énergie.
+Optional
+Catalogue complet: Tous les produits et catégories.

@@ -122,7 +122,7 @@ export default function AdminPacks() {
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Image du pack</label>
                 <div className="flex items-center gap-3">
-                  {form.image_url && <img src={getStorageUrl(form.image_url)} alt="" className="w-16 h-16 rounded-md object-cover" />}
+                  {form.image_url && <img src={getStorageUrl(form.image_url)} alt={form.name || "Pack"} className="w-16 h-16 rounded-md object-cover" />}
                   <button onClick={() => fileRef.current?.click()} disabled={uploading} className="h-10 px-4 rounded-md bg-secondary text-sm flex items-center gap-2">
                     {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} {uploading ? "Upload..." : "Choisir"}
                   </button>

@@ -122,6 +122,7 @@ export default function GlobalSearch() {
                     close();
                   }}
                   className="p-1 text-muted-foreground hover:text-foreground"
+                  aria-label={t("common.close")}
                 >
                   <X size={16} />
                 </button>
@@ -138,7 +139,7 @@ export default function GlobalSearch() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary/60 transition-colors"
                     >
                       <div className="w-10 h-10 rounded-lg bg-secondary/40 overflow-hidden shrink-0">
-                        <img src={getStorageUrl(p.image_url, 80)} alt="" className="w-full h-full object-contain p-1" />
+                        <img src={getStorageUrl(p.image_url, 80)} alt={p.name} className="w-full h-full object-contain p-1" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-foreground truncate">{p.name}</p>

@@ -13,11 +13,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence } from "framer-motion";
 import { trackViewContent, trackAddToCart } from "@/lib/metaPixel";
+import { Helmet } from "react-helmet-async";
+
+const normalizeText = (value?: string) => (value || "").replace(/\s+/g, " ").trim();
+const truncateText = (value: string, max: number) => (value.length > max ? `${value.slice(0, max - 3).trimEnd()}...` : value);
 
 export default function ProductDetail() {
   const { id } = useParams();
   const { addItem } = useCart();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [selectedFlavor, setSelectedFlavor] = useState("");
   const [selectedWeight, setSelectedWeight] = useState("");
   const [qty, setQty] = useState(1);
@@ -76,6 +80,38 @@ export default function ProductDetail() {
   const nutritionFacts = (product.nutrition_facts as any[] || []);
   const usageInstructions = (product as any).usage_instructions || "";
   const conseils = (product as any).conseils || "";
+  const baseUrl = "https://dirlaffaire14.com";
+  const productName = normalizeText(product.name);
+  const productBrand = normalizeText(product.brand);
+  const baseTitle = productBrand ? `${productName} | ${productBrand} — Dir l'Affaire` : `${productName} — Dir l'Affaire`;
+  const title = truncateText(baseTitle, 70);
+  const baseDescription = normalizeText(product.description) || `${productName}${productBrand ? ` par ${productBrand}` : ""}. Livraison partout en Algérie.`;
+  const description = truncateText(baseDescription, 160);
+  const canonical = `${baseUrl}/produit/${product.id}`;
+  const ogImage = getStorageUrl(product.image_url, 1200);
+  const inStock = product.in_stock && (product.stock_qty == null || product.stock_qty > 0);
+  const addToCartLabel = lang === "ar" ? "أضف إلى السلة" : "Ajouter au panier";
+  const decreaseQtyLabel = lang === "ar" ? "تقليل الكمية" : "Diminuer la quantité";
+  const increaseQtyLabel = lang === "ar" ? "زيادة الكمية" : "Augmenter la quantité";
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: productName,
+    description: baseDescription,
+    image: ogImage,
+    brand: {
+      "@type": "Brand",
+      name: productBrand || "Dir l'Affaire",
+    },
+    sku: String(product.id),
+    offers: {
+      "@type": "Offer",
+      url: canonical,
+      priceCurrency: "DZD",
+      price: product.price,
+      availability: inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+  };
 
   const tabs = [
     { key: "description", label: t("product.description") },
@@ -85,6 +121,19 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={canonical} />
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="product:price:amount" content={String(product.price)} />
+        <meta property="product:price:currency" content="DZD" />
+        <script type="application/ld+json">{JSON.stringify(productJsonLd)}</script>
+      </Helmet>
       <div className="container py-4 md:py-8">
         <Link to="/catalogue" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">
           <ChevronLeft size={16} /> {t("product.back")}
@@ -119,9 +168,10 @@ export default function ProductDetail() {
                     <button
                       key={idx}
                       onClick={() => setSelectedImageIdx(idx)}
+                      aria-label={`${product.name} — image ${idx + 1}`}
                       className={`w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${selectedImageIdx === idx ? "border-foreground" : "border-border/50 hover:border-foreground/30"}`}
                     >
-                      <img src={getStorageUrl(img, 80)} alt="" className="w-full h-full object-cover" loading="lazy" width={64} height={64} />
+                      <img src={getStorageUrl(img, 80)} alt={`${product.name} — ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" width={64} height={64} />
                     </button>
                   ))}
                 </div>
@@ -177,9 +227,9 @@ export default function ProductDetail() {
             <div className="mb-6">
               <label className="text-xs font-body font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2.5 block">{t("product.quantity")}</label>
               <div className="flex items-center gap-3">
-                <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-medium hover:bg-muted transition-colors text-foreground">−</button>
+                <button onClick={() => setQty(Math.max(1, qty - 1))} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-medium hover:bg-muted transition-colors text-foreground" aria-label={decreaseQtyLabel}>−</button>
                 <span className="font-body font-medium text-lg w-8 text-center">{qty}</span>
-                <button onClick={() => setQty(qty + 1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-medium hover:bg-muted transition-colors text-foreground">+</button>
+                <button onClick={() => setQty(qty + 1)} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-medium hover:bg-muted transition-colors text-foreground" aria-label={increaseQtyLabel}>+</button>
               </div>
             </div>
 
@@ -233,6 +283,7 @@ export default function ProductDetail() {
                       }}
                       variant="outline"
                       className="h-12 px-5 rounded-full border-foreground/20 text-foreground hover:bg-secondary"
+                      aria-label={addToCartLabel}
                     >
                       <ShoppingCart size={18} />
                     </Button>

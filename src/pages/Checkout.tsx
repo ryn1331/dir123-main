@@ -290,7 +290,7 @@ export default function Checkout() {
             <div className="space-y-3 mb-4">
               {items.map(item => (
                 <div key={`${item.productId}-${item.flavor}-${item.weight}`} className="flex gap-2">
-                  <img src={getStorageUrl(item.imageUrl, 80)} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                  <img src={getStorageUrl(item.imageUrl, 80)} alt={item.name} className="w-12 h-12 rounded-xl object-cover" width={48} height={48} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs truncate">{item.name}</p>
                     <p className="text-xs text-muted-foreground">{item.flavor} · {item.weight} · x{item.quantity}</p>

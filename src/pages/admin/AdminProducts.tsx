@@ -459,7 +459,7 @@ export default function AdminProducts() {
                 <div className="flex items-center gap-3">
                   {form.image_url && (
                     <div className="w-20 h-20 rounded-xl overflow-hidden border border-border bg-secondary/30">
-                      <img src={getStorageUrl(form.image_url)} alt="" className="w-full h-full object-contain p-1" />
+                      <img src={getStorageUrl(form.image_url)} alt={form.name || "Produit"} className="w-full h-full object-contain p-1" />
                     </div>
                   )}
                   <div>
@@ -478,7 +478,7 @@ export default function AdminProducts() {
                   <div className="flex flex-wrap gap-2 mb-2">
                     {form.gallery.map((img, idx) => (
                       <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border bg-secondary/30 group">
-                        <img src={getStorageUrl(img)} alt="" className="w-full h-full object-contain p-0.5" />
+                        <img src={getStorageUrl(img)} alt={form.name || "Produit"} className="w-full h-full object-contain p-0.5" />
                         <button type="button" onClick={() => setForm(f => ({ ...f, gallery: f.gallery.filter((_, i) => i !== idx) }))} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                           <X size={14} className="text-white" />
                         </button>
@@ -674,7 +674,7 @@ export default function AdminProducts() {
             return (
               <div key={p.id} className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/20 transition-all group">
                 <div className="aspect-square bg-secondary/30 relative overflow-hidden">
-                  <img src={getStorageUrl(p.image_url)} alt="" className="w-full h-full object-contain p-2" />
+                  <img src={getStorageUrl(p.image_url)} alt={p.name} className="w-full h-full object-contain p-2" />
                   {p.is_promo && <span className="absolute top-2 left-2 px-1.5 py-0.5 bg-red-500 text-white text-[9px] rounded font-bold">PROMO</span>}
                   {p.is_top_sale && <span className="absolute top-2 right-2 px-1.5 py-0.5 bg-amber-500 text-white text-[9px] rounded font-bold">⭐</span>}
                 </div>
@@ -727,7 +727,7 @@ export default function AdminProducts() {
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-2.5">
                           <div className="w-9 h-9 rounded-lg overflow-hidden border border-border shrink-0 bg-secondary/30">
-                            <img src={getStorageUrl(p.image_url)} alt="" className="w-full h-full object-contain p-0.5" />
+                            <img src={getStorageUrl(p.image_url)} alt={p.name} className="w-full h-full object-contain p-0.5" />
                           </div>
                           <div className="min-w-0">
                             <p className="font-medium text-xs truncate max-w-[120px] md:max-w-none">{p.name}</p>
