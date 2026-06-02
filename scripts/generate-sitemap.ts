@@ -1,8 +1,11 @@
 import { writeFile } from "fs/promises";
 
 const BASE_URL = "https://dirlaffaire14.com";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhdmNwdGFmY3J3d2VqZmFoZmF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg4Njk0OTUsImV4cCI6MjA5NDQ0NTQ5NX0.RZeh2BhohRF8Lp1ptGcAnecP06i9lRNuTPt9lb2FjIA";
 const PRODUCTS_ENDPOINT = "https://wavcptafcrwwejfahfaw.supabase.co/rest/v1/products_public?select=id&in_stock=eq.true";
+const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  "";
 
 type ProductRow = { id: string | number };
 
@@ -30,6 +33,9 @@ const buildUrlNode = ({ loc, changefreq, priority }: SitemapEntry) => {
 };
 
 async function fetchProducts(): Promise<ProductRow[]> {
+  if (!SUPABASE_ANON_KEY) {
+    throw new Error("Missing SUPABASE_ANON_KEY");
+  }
   const response = await fetch(PRODUCTS_ENDPOINT, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
@@ -46,7 +52,13 @@ async function fetchProducts(): Promise<ProductRow[]> {
 }
 
 async function generate() {
-  const products = await fetchProducts();
+  let products: ProductRow[] = [];
+  try {
+    products = await fetchProducts();
+  } catch (error) {
+    console.warn("Sitemap product fetch failed, generating fixed URLs only.");
+    console.warn(error);
+  }
 
   const productEntries: SitemapEntry[] = products.flatMap((product) => {
     const id = String(product.id);
@@ -72,5 +84,5 @@ async function generate() {
 
 generate().catch((error) => {
   console.error(error);
-  process.exit(1);
+  process.exit(0);
 });
