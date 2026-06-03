@@ -25,8 +25,8 @@ export default function Footer() {
             <h4 className="font-body font-semibold mb-3 text-xs uppercase tracking-[0.15em] text-background/40">{t("footer.navigationLabel")}</h4>
             <ul className="space-y-2 text-xs text-background/50">
               <li><Link to="/catalogue" className="hover:text-background transition-colors">{t("nav.catalog")}</Link></li>
-              <li><Link to="/catalogue?cat=beaute" className="hover:text-background transition-colors">{t("footer.beaute")}</Link></li>
-              <li><Link to="/catalogue?cat=immunite" className="hover:text-background transition-colors">{t("footer.sante")}</Link></li>
+              <li><Link to="/catalogue?univers=beaute" className="hover:text-background transition-colors">{t("footer.beaute")}</Link></li>
+              <li><Link to="/catalogue?univers=sante" className="hover:text-background transition-colors">{t("footer.sante")}</Link></li>
             </ul>
           </div>
           <div>

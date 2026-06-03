@@ -184,9 +184,39 @@ export default function ProductDetail() {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="product:price:amount" content={String(product.price)} />
         <meta property="product:price:currency" content="DZD" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={ogImage} />
         <script type="application/ld+json">{JSON.stringify(productJsonLd)}</script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Accueil",
+                item: `${baseUrl}/`
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: product.category === "beaute" || product.category?.includes("soins") || product.category?.includes("cheveux") ? "Beauté & Cosmétiques" : "Santé & Compléments",
+                item: `${baseUrl}/catalogue?univers=${product.category === "beaute" || product.category?.includes("soins") || product.category?.includes("cheveux") ? "beaute" : "sante"}`
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: productName,
+                item: canonical
+              }
+            ]
+          })}
+        </script>
       </Helmet>
       <div className="container py-4 md:py-8">
         <Link to="/catalogue" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6">

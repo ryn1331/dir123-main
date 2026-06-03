@@ -25,7 +25,27 @@ const Index = () => {
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
+        <meta property="og:image" content="https://dirlaffaire14.com/placeholder.svg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://dirlaffaire14.com/placeholder.svg" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "Dir l'Affaire",
+            url: canonical,
+            logo: "https://dirlaffaire14.com/placeholder.svg",
+            description: description,
+            sameAs: [],
+            contactPoint: {
+              "@type": "ContactPoint",
+              contactType: "Customer Support",
+              areaServed: "DZ"
+            }
+          })}
+        </script>
       </Helmet>
       <div className="min-h-screen">
         <HeroSection />

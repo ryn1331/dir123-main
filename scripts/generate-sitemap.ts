@@ -60,12 +60,10 @@ async function generate() {
     console.warn(error);
   }
 
-  const productEntries: SitemapEntry[] = products.flatMap((product) => {
+  // Only include the canonical product URL (/produit/{id}), not the landing page URL (/l/)
+  const productEntries: SitemapEntry[] = products.map((product) => {
     const id = String(product.id);
-    return [
-      { loc: `${BASE_URL}/produit/${id}`, changefreq: "weekly", priority: "0.7" },
-      { loc: `${BASE_URL}/l/${id}`, changefreq: "weekly", priority: "0.6" },
-    ];
+    return { loc: `${BASE_URL}/produit/${id}`, changefreq: "weekly", priority: "0.7" };
   });
 
   const entries = [...fixedEntries, ...productEntries].map(buildUrlNode).join("\n");

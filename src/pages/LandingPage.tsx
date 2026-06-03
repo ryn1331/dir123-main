@@ -151,8 +151,12 @@ export default function LandingPage() {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={canonical} />
         <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="product:price:amount" content={String(product.price)} />
         <meta property="product:price:currency" content="DZD" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={ogImage} />
         <script type="application/ld+json">{JSON.stringify(productJsonLd)}</script>
       </Helmet>
       {/* Minimal header */}

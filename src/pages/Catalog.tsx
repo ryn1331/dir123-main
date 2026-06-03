@@ -173,6 +173,31 @@ const Catalog = React.forwardRef<HTMLDivElement>(function Catalog(_, ref) {
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDescription} />
         <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content="https://dirlaffaire14.com/placeholder.svg" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://dirlaffaire14.com/placeholder.svg" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Accueil",
+                item: `${baseUrl}/`
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: seoUniverse === "beaute" ? "Beauté & Cosmétiques" : seoUniverse === "sante" ? "Santé & Compléments" : "Catalogue",
+                item: canonicalUrl
+              }
+            ]
+          })}
+        </script>
       </Helmet>
       <div className="container py-8 md:py-12">
          <div className="mb-8">
