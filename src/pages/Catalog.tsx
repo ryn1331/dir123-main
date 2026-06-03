@@ -69,11 +69,12 @@ const Catalog = React.forwardRef<HTMLDivElement>(function Catalog(_, ref) {
     : seoUniverse === "sante"
       ? "Compléments alimentaires, vitamines, minéraux, immunité, énergie. Livraison partout en Algérie."
       : "Catalogue complet de cosmétiques bio et compléments alimentaires. Livraison partout en Algérie.";
-  const canonicalUrl = seoUniverse === "beaute"
-    ? `${baseUrl}/catalogue?univers=beaute`
-    : seoUniverse === "sante"
-      ? `${baseUrl}/catalogue?univers=sante`
-      : `${baseUrl}/catalogue`;
+  let canonicalUrl = `${baseUrl}/catalogue`;
+  if (seoUniverse !== "all") canonicalUrl = `${baseUrl}/catalogue?univers=${seoUniverse}`;
+  if (activeCategory && activeCategory !== "all") {
+    // Include category param in canonical when filtering by category
+    canonicalUrl = `${baseUrl}/catalogue?univers=${seoUniverse}&cat=${activeCategory}`;
+  }
 
   const categoryList = useMemo(() => {
     if (universe === "beaute") return beauteCategories;

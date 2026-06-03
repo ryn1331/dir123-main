@@ -63,7 +63,7 @@ export default function LandingPage() {
   const title = truncateText(baseTitle, 70);
   const baseDescription = normalizeText(product.description) || `${productName}${productBrand ? ` par ${productBrand}` : ""}. Livraison partout en Algérie.`;
   const description = truncateText(baseDescription, 160);
-  const canonical = `${baseUrl}/l/${slug || product.id}`;
+  const canonical = product ? `${baseUrl}/produit/${product.id}` : `${baseUrl}/`;
   const ogImage = getStorageUrl(product.image_url, 1200);
   const inStock = product.in_stock && (product.stock_qty == null || product.stock_qty > 0);
   const productJsonLd = {

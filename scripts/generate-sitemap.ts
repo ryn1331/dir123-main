@@ -1,4 +1,11 @@
 import { writeFile } from "fs/promises";
+// Load local .env for local runs so the script can pick up VITE_SUPABASE_PUBLISHABLE_KEY
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require("dotenv").config();
+} catch (e) {
+  // ignore if dotenv not available in production
+}
 
 const BASE_URL = "https://dirlaffaire14.com";
 const PRODUCTS_ENDPOINT = "https://wavcptafcrwwejfahfaw.supabase.co/rest/v1/products_public?select=id&in_stock=eq.true";
@@ -20,6 +27,32 @@ const fixedEntries: SitemapEntry[] = [
   { loc: `${BASE_URL}/catalogue`, changefreq: "daily", priority: "0.9" },
   { loc: `${BASE_URL}/catalogue?univers=beaute`, changefreq: "daily", priority: "0.8" },
   { loc: `${BASE_URL}/catalogue?univers=sante`, changefreq: "daily", priority: "0.8" },
+];
+
+// Category slugs used on the site (kept in sync with Catalog.tsx)
+const BEAUTE_CATS = [
+  "soins-visage",
+  "soins-corps",
+  "cheveux",
+  "ongles",
+  "anti-age",
+  "collagene",
+  "eclat-teint",
+];
+
+const SANTE_CATS = [
+  "immunite",
+  "stress",
+  "energie",
+  "cerveau",
+  "muscles",
+  "os",
+  "coeur",
+  "hormones",
+  "perte-de-poids",
+  "detox",
+  "digestion",
+  "multivitamines",
 ];
 
 const buildUrlNode = ({ loc, changefreq, priority }: SitemapEntry) => {
@@ -66,7 +99,13 @@ async function generate() {
     return { loc: `${BASE_URL}/produit/${id}`, changefreq: "weekly", priority: "0.7" };
   });
 
-  const entries = [...fixedEntries, ...productEntries].map(buildUrlNode).join("\n");
+  // Build category entries
+  const categoryEntries: SitemapEntry[] = [
+    ...BEAUTE_CATS.map((c) => ({ loc: `${BASE_URL}/catalogue?univers=beaute&cat=${c}`, changefreq: "daily", priority: "0.7" })),
+    ...SANTE_CATS.map((c) => ({ loc: `${BASE_URL}/catalogue?univers=sante&cat=${c}`, changefreq: "daily", priority: "0.7" })),
+  ];
+
+  const entries = [...fixedEntries, ...categoryEntries, ...productEntries].map(buildUrlNode).join("\n");
 
   const xml = [
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
