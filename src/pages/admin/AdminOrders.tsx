@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/types/database";
 import type { DbOrder } from "@/types/database";
-import { Search, Eye, Check, X, Copy, FileSpreadsheet, FileText, Truck, Filter } from "lucide-react";
+import { Search, Eye, Check, X, Copy, FileSpreadsheet, FileText, Truck, Filter, Trash } from "lucide-react";
 import { exportOrdersPDF, exportOrdersExcel } from "@/lib/exportUtils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -99,6 +99,51 @@ export default function AdminOrders() {
   }), [orders, search, activeFilter, wilayaFilter, serviceFilter]);
 
   const wilayas = useMemo(() => [...new Set(orders.map(o => o.wilaya))].sort(), [orders]);
+
+  const deleteOrder = async (orderId: string) => {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+
+    const shouldDelete = window.confirm(`Supprimer la commande ${order.order_number} ? Cette action est définitive.`);
+    if (!shouldDelete) return;
+
+    const items = order._items || [];
+    const wasConfirmed = ["Confirmée", "Expédiée", "Livrée"].includes(order.status);
+    if (wasConfirmed && items.length > 0) {
+      await adjustStock(items, "increment");
+      toast.info(`📦 Stock restauré: +${items.reduce((s: number, i: any) => s + i.quantity, 0)} unité(s)`);
+    }
+
+    const { error } = await supabase.from("orders").delete().eq("id", orderId);
+    if (error) { toast.error("Erreur suppression"); return; }
+
+    toast.success("Commande supprimée");
+    setSelectedOrder(null);
+    loadOrders();
+  };
+
+  const deleteSelectedOrders = async () => {
+    if (selected.size === 0) return;
+    const selectedOrders = orders.filter(o => selected.has(o.id));
+    const confirmed = window.confirm(`Supprimer ${selectedOrders.length} commande(s) sélectionnée(s) ? Cette action est définitive.`);
+    if (!confirmed) return;
+
+    for (const order of selectedOrders) {
+      const items = order._items || [];
+      const wasConfirmed = ["Confirmée", "Expédiée", "Livrée"].includes(order.status);
+      if (wasConfirmed && items.length > 0) {
+        await adjustStock(items, "increment");
+      }
+    }
+
+    const { error } = await supabase.from("orders").delete().in("id", [...selected]);
+    if (error) { toast.error("Erreur suppression groupée"); return; }
+
+    toast.success(`${selectedOrders.length} commande(s) supprimée(s)`);
+    setSelected(new Set());
+    setSelectedOrder(null);
+    loadOrders();
+  };
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const order = orders.find(o => o.id === orderId);
@@ -222,6 +267,9 @@ export default function AdminOrders() {
         <button onClick={() => exportOrdersExcel(filtered, `Commandes_${activeFilter}`)} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-secondary text-xs font-medium hover:bg-secondary/80 transition-colors">
           <FileSpreadsheet size={14} className="text-emerald-400" /> Excel
         </button>
+        <button onClick={deleteSelectedOrders} disabled={selected.size === 0} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-destructive text-xs font-medium text-white hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <Trash size={14} /> Supprimer sélection
+        </button>
       </div>
 
       {/* Order detail modal */}
@@ -231,6 +279,9 @@ export default function AdminOrders() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading font-bold text-lg">{selectedOrder.order_number}</h3>
               <div className="flex gap-2">
+                <button onClick={() => deleteOrder(selectedOrder.id)} className="p-2 rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 text-xs" title="Supprimer la commande">
+                  <Trash size={14} />
+                </button>
                 <button onClick={() => copyColisInfo(selectedOrder)} className="p-2 rounded-md bg-secondary hover:bg-secondary/80 text-xs" title="Copier infos colis"><Copy size={14} /></button>
                 <button onClick={() => setSelectedOrder(null)} className="text-muted-foreground hover:text-foreground"><X size={20} /></button>
               </div>
@@ -350,6 +401,7 @@ export default function AdminOrders() {
                   </td>
                   <td className="px-3 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
+                      <button onClick={() => deleteOrder(o.id)} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive hover:text-destructive-foreground transition-colors" title="Supprimer la commande"><Trash size={12} /></button>
                       <button onClick={() => copyColisInfo(o)} className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors" title="Copier infos colis"><Copy size={12} /></button>
                       <button onClick={() => viewOrder(o)} className="p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"><Eye size={14} /></button>
                     </div>
