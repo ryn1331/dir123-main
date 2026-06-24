@@ -24,6 +24,7 @@ const categoryGroups = [
     options: [
       { value: "soins-visage", label: "Soins du visage" },
       { value: "soins-corps", label: "Soins du corps" },
+        { value: "soins-dentaires", label: "Soins dentaires" },
       { value: "cheveux", label: "Cheveux" },
       { value: "ongles", label: "Ongles" },
       { value: "anti-age", label: "Anti-âge" },
@@ -276,7 +277,7 @@ export default function AdminProducts() {
       weights: weightsInput.split(",").map(s => s.trim()).filter(Boolean),
       format: form.format?.trim() || null,
       objectives: objectivesInput.split(",").map(s => s.trim()).filter(Boolean),
-      in_stock: (form.stock_qty ?? 0) > 0 ? true : form.in_stock,
+      in_stock: (form.stock_qty ?? 0) > 0,
       is_top_sale: form.is_top_sale, is_promo: form.is_promo,
       image_url: form.image_url, stock_qty: form.stock_qty,
       gallery: form.gallery,

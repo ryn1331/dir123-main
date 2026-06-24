@@ -15,6 +15,7 @@ const beauteCategories = [
   { key: "all", fr: "Tout Beauté", ar: "كل الجمال" },
   { key: "soins-visage", fr: "Soins du visage", ar: "العناية بالوجه" },
   { key: "soins-corps", fr: "Soins du corps", ar: "العناية بالجسم" },
+  { key: "soins-dentaires", fr: "Soins dentaires", ar: "العناية بالأسنان" },
   { key: "cheveux", fr: "Cheveux", ar: "الشعر" },
   { key: "ongles", fr: "Ongles", ar: "الأظافر" },
   { key: "anti-age", fr: "Anti-âge", ar: "مكافحة الشيخوخة" },
@@ -99,9 +100,9 @@ const Catalog = React.forwardRef<HTMLDivElement>(function Catalog(_, ref) {
     if (activeCategory !== "all") {
       query = query.eq("category", activeCategory);
     } else if (universe === "beaute") {
-      query = query.in("category", ["soins-visage", "soins-corps", "cheveux", "ongles", "anti-age", "collagene", "eclat-teint"]);
+      query = query.in("category", ["soins-visage", "soins-corps", "soins-dentaires", "cheveux", "ongles", "anti-age", "collagene", "eclat-teint"]);
     } else if (universe === "sante") {
-      query = query.in("category", ["immunite", "stress", "energie", "cerveau", "os", "coeur", "hormones", "perte-de-poids", "muscles", "digestion", "detox", "multivitamines", "antioxydants"]);
+      query = query.in("category", ["immunite", "stress", "energie", "cerveau", "muscles", "os", "coeur", "hormones", "perte-de-poids", "detox", "digestion", "multivitamines", "antioxydants"]);
     }
 
     const { data } = await query;

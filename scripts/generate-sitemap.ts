@@ -33,6 +33,7 @@ const fixedEntries: SitemapEntry[] = [
 const BEAUTE_CATS = [
   "soins-visage",
   "soins-corps",
+  "soins-dentaires",
   "cheveux",
   "ongles",
   "anti-age",
