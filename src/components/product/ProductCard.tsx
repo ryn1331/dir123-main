@@ -48,7 +48,7 @@ const ProductCard = React.memo(({ product, index = 0 }: ProductCardProps) => {
             {product.name}
           </h3>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="font-heading font-bold text-foreground text-base">{formatPrice(product.price)}</span>
+            <span className="font-heading font-bold text-red-600 text-base">{formatPrice(product.price)}</span>
             {product.old_price && (
               <span className="text-xs text-muted-foreground line-through">{formatPrice(product.old_price)}</span>
             )}
